@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itzhang.management.mapper.LogMapper">
+    <insert id="insertLog">
+        insert into sys_operation_log
+        (user_id, user_name, module_name, operation, operation_id, request_params, response_result, request_ip,
+         exception_msg)
+        values (#{userId}, #{userName}, #{moduleName}, #{operation}, #{operationId}, #{requestParams},
+                #{responseResult}, #{requestIp}, #{exceptionMsg})
+    </insert>
+</mapper>
