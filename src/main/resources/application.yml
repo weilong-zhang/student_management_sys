@@ -23,6 +23,23 @@ spring:
       max-pool-prepared-statement-per-connection-size: 20  # 每个连接上的 PreparedStatement 缓存数量
       filters: stat,wall,log4j2  # 连接过滤器列表
       connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000  # 连接附加属性
+  redis:
+    host: 101.37.211.195    #Redis 地址
+    port: 33061             #Redis 端口
+    password: zzczwl1425    #Redis 密码，如果没有留空
+    database: 0             #使用的数据库
+    timeout: 5000ms          #连接超时
+
+  mail:
+    host: smtp.163.com            #SMTP 服务器地址（按你实际邮箱配置）
+    username: zwl1425@163.com     #发件邮箱
+    password: CBTkVX4n4nhxYkiH    #SMTP 授权码，不是登录密码
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls.enable: true
 
 mybatis:
   mapper-locations: classpath:Mapper/*.xml
