@@ -16,4 +16,12 @@
             </if>
         </where>
     </select>
+    <select id="login" resultType="com.itzhang.management.entity.dto.StuUserDTO">
+        select * from stu_user
+        <where>
+            <if test="stuEmail != null">
+                stu_email = #{stuEmail}
+            </if>
+        </where>
+    </select>
 </mapper>

@@ -8,4 +8,6 @@ public interface UserMapper {
     void register(StuUserDTO stuUserDTO);
 
     Integer getUserByEmail(String stuEmail);
+
+    StuUserDTO login(String stuEmail);
 }

@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class JwtUtils {
 
-    private static String signKey = "weiloong Zhang";
+    private static String signKey = "weiloongZhang";
     private static Long expire = 43200000L;
 
     //将 Base64 字符串转换为 SecretKey

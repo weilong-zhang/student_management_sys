@@ -4,6 +4,7 @@ import com.itzhang.management.entity.dto.StuUserDTO;
 import com.itzhang.management.exception.BaseException;
 import com.itzhang.management.mapper.UserMapper;
 import com.itzhang.management.service.UserService;
+import com.itzhang.management.utils.CryptoUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -14,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class UserServiceImpl implements UserService {
 
+    @Autowired
+    private CryptoUtil cryptoUtil;
     @Autowired
     private UserMapper userMapper;
 
@@ -42,5 +45,38 @@ public class UserServiceImpl implements UserService {
         } catch (DuplicateKeyException e) {
             throw new BaseException("注册失败，邮箱已存在");
         }
+    }
+
+    /**
+     * @param stuUserDTO
+     * @return com.itzhang.management.entity.dto.StuUserDTO
+     * @Description 用户登录
+     * @Author weiloong_zhang
+     */
+    @Override
+    public StuUserDTO login(StuUserDTO stuUserDTO) {
+        //开始抓取关键信息
+        String stuEmail = stuUserDTO.getStuEmail();
+        String userPassword = stuUserDTO.getUserPassword();
+
+        //开始获取用户信息
+        StuUserDTO user = userMapper.login(stuEmail);
+
+        if (user == null){
+            log.error("用户不存在");
+            throw new BaseException("用户不存在");
+        }
+
+        //开始校验密码
+        String passwordStr = user.getUserPassword() != null ? user.getUserPassword() : "";
+
+        Boolean isPassword = cryptoUtil.matches(userPassword, passwordStr);
+
+        if (!isPassword){
+            log.error("密码错误");
+            throw new BaseException("密码错误");
+        }
+
+        return user;
     }
 }
