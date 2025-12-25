@@ -149,7 +149,7 @@ public class UserController {
         String userName = "游客" + sb.toString();
 
         StuUserDTO stuUserDTO = StuUserDTO.builder()
-                .userId(UUID.randomUUID().toString().replace("-", ""))
+                .userId(UUID.randomUUID().toString().replace("-", "").substring(0, 25))
                 .stuEmail(registerDTO.getEmail())
                 .userName(userName)
                 .userPassword(password)
@@ -214,5 +214,26 @@ public class UserController {
                 .build();
 
         return Result.success(userVO);
+    }
+
+    /**
+     * @param stuUserDTO
+     * @return com.itzhang.management.entity.result.Result
+     * @Description 用于更新用户密码、信息等
+     * @Author weiloong_zhang
+     */
+    @LogOperation(module = "用户模块", operation = "更新用户信息")
+    @PostMapping("/upate/user/info")
+    public Result updateUerInfo(@RequestBody StuUserDTO stuUserDTO) {
+        log.info("开始更新用户信息");
+
+        //开始判断是否存在请求
+        if (stuUserDTO == null) {
+            return Result.error("修改请求不可为空");
+        }
+
+        userService.updateUserInfo(stuUserDTO);
+
+        return Result.success();
     }
 }

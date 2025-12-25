@@ -6,4 +6,6 @@ public interface UserService {
     void register(StuUserDTO stuUserDTO);
 
     StuUserDTO login(StuUserDTO stuUserDTO);
+
+    void updateUserInfo(StuUserDTO stuUserDTO);
 }
