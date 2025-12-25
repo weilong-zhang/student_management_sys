@@ -2,7 +2,10 @@ package com.itzhang.management.controller;
 
 import com.itzhang.management.aop.annotation.LogOperation;
 import com.itzhang.management.entity.dto.EmailDTO;
+import com.itzhang.management.entity.dto.RegisterDTO;
+import com.itzhang.management.entity.dto.StuUserDTO;
 import com.itzhang.management.entity.result.Result;
+import com.itzhang.management.service.UserService;
 import com.itzhang.management.utils.EmailUtil;
 import com.itzhang.management.utils.RandomCodeUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -26,6 +31,8 @@ public class UserController {
     private RandomCodeUtil randomCodeUtil;
     @Autowired
     private EmailUtil emailUtil;
+    @Autowired
+    private UserService userService;
 
     /**
      * @param emailDTO
@@ -72,6 +79,72 @@ public class UserController {
         String emailKey = "email:code:" + email;
         //发送成功将验证码保存在缓存中，并设置五分钟过期
         redisTemplate.opsForValue().set(emailKey, verificationCode, 5 * 60, TimeUnit.SECONDS);
+
+        return Result.success();
+    }
+
+    /**
+     * @param registerDTO
+     * @return com.itzhang.management.entity.result.Result
+     * @Description 使用Email注册
+     * @Author weiloong_zhang
+     */
+    @LogOperation(module = "用户模块", operation = "邮箱注册")
+    @PostMapping("/register/byEmail")
+    public Result register(@RequestBody RegisterDTO registerDTO) {
+        log.info("开始使用邮箱注册");
+
+        //参数校验--实体类校验
+        if (registerDTO == null) {
+            return Result.error("参数不存在");
+        }
+
+        //参数校验--邮箱
+        if (registerDTO.getEmail() == null || registerDTO.getEmail().equals("")) {
+            return Result.error("邮箱不能为空");
+        }
+
+        //参数校验--验证码
+        if (registerDTO.getVerificationCode() == null || registerDTO.getVerificationCode().equals("")) {
+            return Result.error("验证码不能为空");
+        }
+
+        //参数校验--密码
+        if (registerDTO.getPassword() == null || registerDTO.getPassword().equals("")) {
+            return Result.error("密码不能为空");
+        }
+
+        //参数存在，开始校验验证码
+        String emailKey = "email:code:" + registerDTO.getEmail();
+        String verificationCode = (String) redisTemplate.opsForValue().get(emailKey);
+
+        if (!verificationCode.equals(registerDTO.getVerificationCode())) {
+            return Result.error("验证码错误");
+        }
+
+        //验证码校验成功，开始注册
+        //生成一个随机的游客名称
+        String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+        StringBuilder sb = new StringBuilder();
+
+        Random random = new Random();
+
+        for (int i = 0; i < 5; i++) {
+            sb.append(letters.charAt(random.nextInt(letters.length())));
+        }
+
+        String userName = "游客" + sb.toString();
+
+        StuUserDTO stuUserDTO = StuUserDTO.builder()
+                .userId(UUID.randomUUID().toString().replace("-", ""))
+                .stuEmail(registerDTO.getEmail())
+                .userName(userName)
+                .userPassword(registerDTO.getPassword())
+                .build();
+
+        //开始注册
+        userService.register(stuUserDTO);
 
         return Result.success();
     }
