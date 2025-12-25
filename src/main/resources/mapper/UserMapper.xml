@@ -2,8 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.itzhang.management.mapper.UserMapper">
+    <!--用户注册-->
     <insert id="register" parameterType="com.itzhang.management.entity.dto.StuUserDTO" useGeneratedKeys="true" keyProperty="id">
         insert into stu_user(user_id, stu_email, user_name, user_password)
         values (#{userId}, #{stuEmail}, #{userName}, #{userPassword})
     </insert>
+    <!--通过邮箱查询用户，保证幂等性-->
+    <select id="getUserByEmail" resultType="java.lang.Integer">
+        select count(*) from stu_user
+        <where>
+            <if test="stuEmail != null">
+                stu_email = #{stuEmail}
+            </if>
+        </where>
+    </select>
 </mapper>
