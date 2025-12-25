@@ -62,11 +62,50 @@
             </if>
         </where>
     </select>
+    <!--通过用户id或者用户名查询用户-->
     <select id="getUserByIdORName" resultType="com.itzhang.management.entity.pojo.StuUser">
         select *
         from stu_user
         where user_id = #{userId}
           and stu_email = #{userName}
     </select>
-
+    <!--通过用户id查询用户-->
+    <select id="getUserById" resultType="com.itzhang.management.entity.pojo.StuUser">
+        select * from stu_user
+        <where>
+            <if test="userId != null">
+                user_id = #{userId}
+            </if>
+        </where>
+    </select>
+    <select id="queryUserList" resultType="com.itzhang.management.entity.vo.StuUserVO">
+        select * from stu_user
+        <where>
+            <if test="stuEmail != null">
+                stu_email like concat('%',#{stuEmail},'%')
+            </if>
+            <if test="userName != null">
+                user_name like concat('%',#{userName},'%')
+            </if>
+            <if test="userPhone != null">
+                user_phone like concat('%',#{userPhone},'%')
+            </if>
+        </where>
+        order by id desc
+        limit #{offset}, #{pageSize}
+    </select>
+    <select id="queryTotal" resultType="java.lang.Integer">
+        select count(1) from stu_user
+        <where>
+            <if test="stuEmail != null">
+                stu_email like concat('%',#{stuEmail},'%')
+            </if>
+            <if test="userName != null">
+                user_name like concat('%',#{userName},'%')
+            </if>
+            <if test="userPhone != null">
+                user_phone like concat('%',#{userPhone},'%')
+            </if>
+        </where>
+    </select>
 </mapper>

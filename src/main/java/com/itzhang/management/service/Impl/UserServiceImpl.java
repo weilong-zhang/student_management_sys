@@ -1,6 +1,10 @@
 package com.itzhang.management.service.Impl;
 
+import com.itzhang.management.entity.dto.UserQueryDTO;
 import com.itzhang.management.entity.dto.StuUserDTO;
+import com.itzhang.management.entity.pojo.StuUser;
+import com.itzhang.management.entity.result.PageResult;
+import com.itzhang.management.entity.vo.StuUserVO;
 import com.itzhang.management.exception.BaseException;
 import com.itzhang.management.mapper.UserMapper;
 import com.itzhang.management.service.UserService;
@@ -11,7 +15,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLException;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -122,5 +126,59 @@ public class UserServiceImpl implements UserService {
             log.error("更新异常：{}", ex);
             throw new BaseException("更新用户信息失败");
         }
+    }
+
+    /**
+     * @param userId
+     * @return com.itzhang.management.entity.pojo.StuUser
+     * @Description 根据用户唯一id查询用户信息
+     * @Author weiloong_zhang
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public StuUser getUserById(String userId) {
+
+        StuUser stuUser = userMapper.getUserById(userId);
+
+        if (stuUser == null) {
+            log.error("用户不存在");
+            throw new BaseException("用户不存在");
+        }
+
+        return stuUser;
+    }
+
+    /**
+     * @param userQueryDTO
+     * @return com.itzhang.management.entity.result.PageResult
+     * @Description 查询用户列表
+     * @Author weiloong_zhang
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public PageResult queryUserList(UserQueryDTO userQueryDTO) {
+        log.info("开始查询用户列表");
+
+        userQueryDTO.setOffset((userQueryDTO.getPage() - 1) * userQueryDTO.getPageSize());
+
+        List<StuUserVO> userList = userMapper.queryUserList(userQueryDTO);
+
+        Integer total = userMapper.queryTotal(userQueryDTO);
+
+        Integer quality = userList.size();
+
+        if (userList == null || userList.isEmpty()) {
+            return PageResult.builder()
+                    .total(total)
+                    .quality(quality)
+                    .dataList(null)
+                    .build();
+        }
+
+        return PageResult.builder()
+                .total(total)
+                .quality(quality)
+                .dataList(userList)
+                .build();
     }
 }

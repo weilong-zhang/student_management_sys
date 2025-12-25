@@ -2,8 +2,11 @@ package com.itzhang.management.controller;
 
 import com.itzhang.management.aop.annotation.LogOperation;
 import com.itzhang.management.entity.dto.EmailDTO;
+import com.itzhang.management.entity.dto.UserQueryDTO;
 import com.itzhang.management.entity.dto.RegisterDTO;
 import com.itzhang.management.entity.dto.StuUserDTO;
+import com.itzhang.management.entity.pojo.StuUser;
+import com.itzhang.management.entity.result.PageResult;
 import com.itzhang.management.entity.result.Result;
 import com.itzhang.management.entity.vo.StuUserVO;
 import com.itzhang.management.service.UserService;
@@ -14,17 +17,11 @@ import com.itzhang.management.utils.RandomCodeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -235,5 +232,67 @@ public class UserController {
         userService.updateUserInfo(stuUserDTO);
 
         return Result.success();
+    }
+
+    /**
+     * @param userId
+     * @return com.itzhang.management.entity.result.Result
+     * @Description 根据用户id查询用户信息
+     * @Author weiloong_zhang
+     */
+    @LogOperation(module = "用户模块", operation = "根据用户ID查询用户信息")
+    @PostMapping
+    public Result getUserById(@RequestParam String userId) {
+        log.info("开始根据用户ID查询用户信息");
+
+        //校验查询条件是否存在
+        if (userId == null || "".equals(userId)) {
+            return Result.error("用户不可为空");
+        }
+
+        //开始查询
+        StuUser stuUser = userService.getUserById(userId);
+
+        StuUserVO stuUserVO = StuUserVO.builder()
+                .id(stuUser.getId())
+                .userId(stuUser.getUserId())
+                .stuEmail(stuUser.getStuEmail())
+                .userName(stuUser.getUserName())
+                .userPhone(stuUser.getUserPhone())
+                .userSex(stuUser.getUserSex())
+                .userBirthday(stuUser.getUserBirthday())
+                .isVip(stuUser.getIsVip())
+                .build();
+
+        return Result.success(stuUserVO);
+    }
+
+    /**
+     * @param userQueryDTO
+     * @return com.itzhang.management.entity.result.Result<com.itzhang.management.entity.result.PageResult>
+     * @Description 查询用户列表
+     * @Author weiloong_zhang
+     */
+    @LogOperation(module = "用户模块", operation = "查询用户列表")
+    @PostMapping("/query/user/list")
+    public Result<PageResult> queryUserList(@RequestBody UserQueryDTO userQueryDTO) {
+        log.info("开始查询用户列表");
+
+        //开始校验入参是否存在
+        if (userQueryDTO == null) {
+            return Result.error("查询参数不可为空");
+        }
+
+        if (userQueryDTO.getPage() == null || userQueryDTO.getPageSize() == null) {
+            return Result.error("请输入页码");
+        }
+
+        if (userQueryDTO.getPage() < 1 || userQueryDTO.getPageSize() < 1) {
+            return Result.error("请输入正确的页码");
+        }
+
+        PageResult pageResult = userService.queryUserList(userQueryDTO);
+
+        return Result.success(pageResult);
     }
 }
