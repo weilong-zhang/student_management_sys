@@ -6,6 +6,7 @@ import com.itzhang.management.entity.dto.RegisterDTO;
 import com.itzhang.management.entity.dto.StuUserDTO;
 import com.itzhang.management.entity.result.Result;
 import com.itzhang.management.service.UserService;
+import com.itzhang.management.utils.CryptoUtil;
 import com.itzhang.management.utils.EmailUtil;
 import com.itzhang.management.utils.RandomCodeUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,8 @@ public class UserController {
     private RandomCodeUtil randomCodeUtil;
     @Autowired
     private EmailUtil emailUtil;
+    @Autowired
+    private CryptoUtil cryptoUtil;
     @Autowired
     private UserService userService;
 
@@ -114,6 +117,9 @@ public class UserController {
             return Result.error("密码不能为空");
         }
 
+        //密码加密
+        String password = cryptoUtil.encrypt(registerDTO.getPassword());
+
         //参数存在，开始校验验证码
         String emailKey = "email:code:" + registerDTO.getEmail();
         String verificationCode = (String) redisTemplate.opsForValue().get(emailKey);
@@ -140,7 +146,7 @@ public class UserController {
                 .userId(UUID.randomUUID().toString().replace("-", ""))
                 .stuEmail(registerDTO.getEmail())
                 .userName(userName)
-                .userPassword(registerDTO.getPassword())
+                .userPassword(password)
                 .build();
 
         //开始注册
