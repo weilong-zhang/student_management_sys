@@ -2,10 +2,13 @@ package com.itzhang.management.interceptor;
 
 import com.alibaba.fastjson.JSONObject;
 import com.itzhang.management.constant.JwtClaimsConstant;
+import com.itzhang.management.entity.pojo.StuUser;
 import com.itzhang.management.entity.result.Result;
+import com.itzhang.management.mapper.UserMapper;
 import com.itzhang.management.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -20,6 +23,9 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 @Component
 public class LoginCheckInterceptor implements HandlerInterceptor {
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -49,6 +55,21 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
             return false;
         }
 
+        //获取用户信息，判断是否存在当前用户
+        String userId = request.getHeader("X-User-Id");
+        String userName = request.getHeader("X-User-Name");
+
+        StuUser user = userMapper.getUserByIdORName(userId, userName);
+
+        //判断，如果不存在，那么不允许执行用户级别的操作
+        if (user == null){
+            log.info("用户不存在");
+            Result error = Result.error("INVALID_USER");
+            String notLogin = JSONObject.toJSONString(error);
+            response.getWriter().write(notLogin);
+            return false;
+        }
+
         //获取请求中的令牌token
         String jwt = request.getHeader("token");
 
@@ -67,8 +88,6 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
         try {
             log.info("解析token");
             Claims claims = JwtUtils.parseJWT(jwt);
-            Long userId = Long.valueOf(claims.get(JwtClaimsConstant.USER_ID).toString());
-            log.info("当前用户手机号:{}", userId);
         } catch (Exception e) {
             //解析失败
             log.error("令牌解析失败,{}", e);
