@@ -241,7 +241,7 @@ public class UserController {
      * @Author weiloong_zhang
      */
     @LogOperation(module = "用户模块", operation = "根据用户ID查询用户信息")
-    @PostMapping
+    @GetMapping("/query/user")
     public Result getUserById(@RequestParam String userId) {
         log.info("开始根据用户ID查询用户信息");
 
