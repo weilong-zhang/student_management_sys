@@ -127,7 +127,7 @@ public class UserController {
         String emailKey = "email:code:" + registerDTO.getEmail();
         String verificationCode = (String) redisTemplate.opsForValue().get(emailKey);
 
-        if (!verificationCode.equals(registerDTO.getVerificationCode())) {
+        if (verificationCode == null || !verificationCode.equals(registerDTO.getVerificationCode())) {
             return Result.error("验证码错误");
         }
 
